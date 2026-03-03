@@ -205,9 +205,27 @@ footer a {
 .editorwrap{
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.editoractions{
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 12px;
+  background: #1c1e29;
+  border-bottom: 1px solid #2a2d3a;
+}
+.runbtn{
+  background: #8be9fd;
+  color: #1c1e29;
+  min-width: 90px;
+}
+.runbtn:hover{
+  background: #63d8ef;
 }
 .editorcontainer{
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 .editorcontainer .cm-editor{
   height: 100%;
@@ -263,6 +281,22 @@ footer a {
 }
 .editorcontainer .cm-lintPoint-error::after{
   border-bottom-color: #ff5555;
+}
+.outputpanel{
+  margin: 0;
+  padding: 10px 12px;
+  min-height: 90px;
+  max-height: 180px;
+  overflow: auto;
+  background: #11131b;
+  color: #50fa7b;
+  border-top: 1px solid #2a2d3a;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+.outputpanel.error{
+  color: #ff5555;
 }
 
 .codemirror{

@@ -20,6 +20,8 @@ const Editorpage = () => {
   const codeRef = useRef(DEFAULT_CODE);
   const [clients, setClients] = React.useState([]);
   const [incomingCode, setIncomingCode] = React.useState(DEFAULT_CODE);
+  const [runOutput, setRunOutput] = React.useState('Click RUN to execute code.');
+  const [runError, setRunError] = React.useState(false);
 
   useEffect(() => {
     if (!username || !userId) {
@@ -71,7 +73,6 @@ const Editorpage = () => {
       };
 
       socket.on('connect_error', handleConnectError);
-      socket.on('connect_failed', handleConnectError);
       socket.on(ACTIONS.JOINED, handleJoined);
       socket.on(ACTIONS.JOIN_REJECTED, handleJoinRejected);
       socket.on(ACTIONS.DISCONNECTED, handleDisconnected);
@@ -91,6 +92,7 @@ const Editorpage = () => {
       socketRef.current?.off(ACTIONS.JOIN_REJECTED);
       socketRef.current?.off(ACTIONS.DISCONNECTED);
       socketRef.current?.off(ACTIONS.CODE_CHANGE);
+      socketRef.current?.off('connect_error');
     };
   }, [navigate, roomId, userId, username]);
 
@@ -113,6 +115,26 @@ const Editorpage = () => {
     navigate('/', { replace: true });
   };
 
+  const runCode = () => {
+    const logs = [];
+    const safeConsole = {
+      log: (...args) => logs.push(args.map((arg) => String(arg)).join(' ')),
+      warn: (...args) => logs.push(`WARN: ${args.map((arg) => String(arg)).join(' ')}`),
+      error: (...args) => logs.push(`ERROR: ${args.map((arg) => String(arg)).join(' ')}`),
+    };
+
+    try {
+      // Evaluate current editor code in a limited function scope.
+      const execute = new Function('console', `"use strict";\n${codeRef.current}`);
+      execute(safeConsole);
+      setRunError(false);
+      setRunOutput(logs.length ? logs.join('\n') : 'Code executed successfully. No output.');
+    } catch (error) {
+      setRunError(true);
+      setRunOutput(`${error.name}: ${error.message}`);
+    }
+  };
+
   return (
     <div className="mainwrap">
       <div className="aside">
@@ -133,7 +155,11 @@ const Editorpage = () => {
         </div>
       </div>
       <div className="editorwrap">
+        <div className="editoractions">
+          <button className="btn runbtn" onClick={runCode}>RUN</button>
+        </div>
         <Editor onCodeChange={handleCodeChange} incomingCode={incomingCode} />
+        <pre className={`outputpanel ${runError ? 'error' : ''}`}>{runOutput}</pre>
       </div>
     </div>
   )
